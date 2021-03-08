@@ -1,0 +1,18 @@
+{
+  "name": "annotation-logic",
+  "version": "1.0.0",
+  "description": "A predicate logic notation designed to be easier to read",
+  "main": "src/index.ts",
+  "repository": "https://github.com/joelyjoel/annotation-logic.git",
+  "author": "Joel Plowright <joelyjoel@protonmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^26.0.20",
+    "jest": "^26.6.3",
+    "ts-loader": "^8.0.17",
+    "tsc": "^1.20150623.0",
+    "typescript": "^4.2.3",
+    "webpack": "^5.24.4",
+    "webpack-cli": "^4.5.0"
+  }
+}
