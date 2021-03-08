@@ -1,4 +1,4 @@
-import {un_nest, substitue_nested, wipe_nested} from "./args";
+import {un_nest, substitue_nested, wipe_nested, isShallow} from "./args";
 
 expect(
   un_nest("[the cat =a ] is eating [[the dog =b]'s dinner =c")
@@ -21,3 +21,9 @@ expect(
 expect(
   wipe_nested("[the cat] naps")
 ).toBe("[] naps")
+
+test('isShallow', () => {
+  expect(isShallow("[the cat] naps")).toBe(true);
+  expect(isShallow("the cat")).toBe(true);
+  expect(isShallow("[the cat] is eating [[the dog]'s dinner]")).toBe(false);
+});

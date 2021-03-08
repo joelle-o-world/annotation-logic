@@ -80,3 +80,38 @@ export function wipe_nested(a: string) {
 
   return result
 }
+
+export function getDepth(a: string) {
+  let depth = 0;
+  let maxDepth = 0;
+
+  for(let i=0; i < a.length; ++i) {
+    if(a[i] == '['){ 
+      ++depth;
+      if(depth > maxDepth)
+        maxDepth = depth;
+    } else if(a[i] == ']')
+      --depth;
+  }
+
+  return maxDepth;
+}
+
+export function hasMaxDepth(a: string, maxDepth=1) {
+  let depth = 0;
+  for(let i=0; i < a.length; ++i) {
+    if(a[i] == '[') {
+      ++depth;
+      if(depth > maxDepth)
+        return false;
+    } else if ( a[i] == ']') 
+      --depth;
+  }
+
+  // Otherwise,
+  return false
+}
+
+export function isShallow(a: string) {
+  return hasMaxDepth(a, 1);
+}
