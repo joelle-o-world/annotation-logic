@@ -1,18 +1,17 @@
 import { un_nest, substitue_nested, wipe_nested, isShallow } from "./args";
 
-test("un_nest", () => {
-  expect(
-    un_nest("[the cat =a] is eating [[the dog =b]'s dinner =c]")
-  ).toStrictEqual(["the cat =a", "[the dog =b]'s dinner =c"]);
-});
+expect(
+  un_nest("[the cat =a ] is eating [[the dog =b]'s dinner =c")
+).toStrictEqual(["the cat =a", "[the dog =b]'s dinner =c"]);
+
+test('', () => {expect(
+  substitue_nested("[the cat] is eating [[the dog]'s dinner]", [
+    "the mouse",
+    "some delicious cheese",
+  ])
+).toBe("[the mouse] is eating [some delicious cheese]");})
 
 test("substitue_nested", () => {
-  expect(
-    substitue_nested("[the cat] is eating [[the dog]'s dinner]", [
-      "the mouse",
-      "some delicious cheese",
-    ])
-  ).toBe("[the mouse] is eating [some delicious cheese]");
   expect(substitue_nested("[] naps", ["the cat"])).toBe("[the cat] naps");
 });
 

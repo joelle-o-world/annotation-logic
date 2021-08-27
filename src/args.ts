@@ -100,7 +100,7 @@ export function hasMaxDepth(a: string, maxDepth = 1) {
   }
 
   // Otherwise,
-  return false;
+  return true;
 }
 
 export function isShallow(a: string) {
