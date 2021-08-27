@@ -4,6 +4,9 @@ import {
   wipe_nested,
   isShallow,
   assertShallow,
+  standardForm,
+  getOneWordPredicate,
+  logicNotation,
 } from "./args";
 
 test("un_nest", () => {
@@ -39,3 +42,41 @@ test("assertShallow", () => {
     assertShallow("[the cat] is eating [[the dog]'s dinner]")
   ).toThrow();
 });
+
+describe("standardForm", () => {
+  test.each([
+    ["the cat", "the cat"],
+    ["[the cat =cat] did [a terrible poo =poo]", "[=cat] did [=poo]"],
+  ])("%j --standardised--> %j", (input, expectedOutput) => {
+    expect(standardForm(input)).toBe(expectedOutput);
+  });
+});
+
+test.todo("deepParse");
+
+test.todo("getPredicate");
+describe("one word predicates", () => {
+  describe("getOneWordPredicate", () => {
+    test.each([
+      ["the cat", "TheCat"],
+      ["this is [my friend]", "ThisIs_"],
+    ])("getOneWordPredicate(%j%) = %j", (input, expectedOutput) => {
+      expect(getOneWordPredicate(input)).toBe(expectedOutput);
+    });
+  });
+
+  test.todo("isOneWordPredicate");
+  test.todo("assertOneWordPredicate");
+  describe("logicNotation", () => {
+    test.each([["[=cat] sat on [=mat]", "_SatOn_(cat, mat)"]])(
+      "logicNotation(%j%) = %j",
+      (input, expectedOutput) => {
+        expect(logicNotation(input)).toBe(expectedOutput);
+      }
+    );
+  });
+});
+test.todo("iterateBits");
+
+test.todo("getAssignment");
+test.todo("setAssignment");

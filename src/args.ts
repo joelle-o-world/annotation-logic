@@ -111,3 +111,42 @@ export function assertShallow(x: string): true {
   if (isShallow(x)) return true;
   else throw `Expected shallow argument, got ${x}`;
 }
+
+export function standardForm(x: string): string {
+  // TODO
+}
+
+export function deepParse(x: string): string {
+  // TODO
+}
+
+export function getPredicate(x: string): string {
+  return wipe_nested(x);
+}
+
+export function* iterateBits(x: string): Generator<{
+  kind: "nested arg" | "literal" | "assignment" | "white-space";
+  str: string;
+}> {
+  // TODO
+}
+
+export function* getAssignments(x: string): Generator<string> {
+  // TODO: Make this less wasteful
+  const flat = wipe_nested(x);
+  const reg = /=\w+/g;
+  let match;
+  while ((match = reg.exec(flat))) yield match[0].slice(1);
+}
+
+export function getFirstAssignment(x: string): string | null {
+  const [a] = getAssignments(x);
+  if (a) return a;
+  else return null;
+}
+
+export function getAssignment(x: string): string | null {
+  const assignments = [...getAssignments(x)];
+  if (assignments.length > 1) throw `Expected 1 or 0 assignments: ${x}`;
+  else return assignments[0] || null;
+}
