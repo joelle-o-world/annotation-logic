@@ -1,4 +1,10 @@
-import { un_nest, substitue_nested, wipe_nested, isShallow } from "./args";
+import {
+  un_nest,
+  substitue_nested,
+  wipe_nested,
+  isShallow,
+  assertShallow,
+} from "./args";
 
 test("un_nest", () => {
   expect(
@@ -24,4 +30,12 @@ test("isShallow", () => {
   expect(isShallow("[the cat] naps")).toBe(true);
   expect(isShallow("the cat")).toBe(true);
   expect(isShallow("[the cat] is eating [[the dog]'s dinner]")).toBe(false);
+});
+
+test("assertShallow", () => {
+  expect(assertShallow("[the cat] naps")).toBe(true);
+  expect(assertShallow("the cat")).toBe(true);
+  expect(() =>
+    assertShallow("[the cat] is eating [[the dog]'s dinner]")
+  ).toThrow();
 });

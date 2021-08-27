@@ -106,3 +106,8 @@ export function hasMaxDepth(a: string, maxDepth = 1) {
 export function isShallow(a: string) {
   return hasMaxDepth(a, 1);
 }
+
+export function assertShallow(x: string): true {
+  if (isShallow(x)) return true;
+  else throw `Expected shallow argument, got ${x}`;
+}
