@@ -1,6 +1,6 @@
 import {
   un_nest,
-  substitue_nested,
+  substitute_nested,
   wipe_nested,
   isShallow,
   assertShallow,
@@ -18,14 +18,14 @@ test("un_nest", () => {
   ).toStrictEqual(["the cat =a", "[the dog =b]'s dinner =c"]);
 });
 
-test("substitue_nested", () => {
+test("substitute_nested", () => {
   expect(
-    substitue_nested("[the cat] is eating [[the dog]'s dinner]", [
+    substitute_nested("[the cat] is eating [[the dog]'s dinner]", [
       "the mouse",
       "some delicious cheese",
     ])
   ).toBe("[the mouse] is eating [some delicious cheese]");
-  expect(substitue_nested("[] naps", ["the cat"])).toBe("[the cat] naps");
+  expect(substitute_nested("[] naps", ["the cat"])).toBe("[the cat] naps");
 });
 
 test("wipe_nested", () => {
@@ -105,13 +105,13 @@ test("compare()", () => {
 test("getMapping", () => {
   expect(
     getMapping(["x", "y"], "[=x] is a string", "[=a] is a square")
-  ).toStrictEqual({});
+  ).toStrictEqual(null);
   expect(
     getMapping(["x", "y"], "[=x] is a string", "[=a] is a string")
   ).toStrictEqual({ x: "a" });
   expect(
     getMapping(["x", "y"], "[=b] is a string", "[=a] is a string")
-  ).toStrictEqual({});
+  ).toStrictEqual(null);
   expect(
     getMapping(
       ["x", "y"],
@@ -119,7 +119,7 @@ test("getMapping", () => {
       "[=a] is a component of [=b]"
     )
   ).toStrictEqual({
-    x: 'a',
-    y: 'b'
+    x: "a",
+    y: "b",
   });
 });

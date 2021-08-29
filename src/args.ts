@@ -1,7 +1,7 @@
 /**
  * Retrieves the nested arguments from an argstring.
  */
-export function un_nest(arg: string) {
+export function un_nest(arg: string): string[] {
   let depth = 0;
   let result = [];
   let pin: number;
@@ -44,7 +44,7 @@ export function substitute(a: string, subs: string[]) {
 /**
  * Like `substitute()` but wraps the substitutions in square brackets
  */
-export function substitue_nested(a: string, subs: string[]) {
+export function substitute_nested(a: string, subs: string[]): string {
   return substitute(
     a,
     subs.map((s) => `[${s}]`)
@@ -151,11 +151,29 @@ export function getAssignment(x: string): string | null {
   else return assignments[0];
 }
 
-export function getOneWordPredicate(): string {
+export function setAssignment(statement: string, assignment: string): string {
+  // TODO: Optimise
+  if (assignment && assignment.length)
+    return `${wipeAssignments(statement)} =${assignment}`;
+  else return wipeAssignments(statement);
+}
+
+/**
+ * (shallow)
+ */
+export function wipeAssignments(statement: string): string {
+  // TODO: Optimise
+  return substitute_nested(
+    wipe_nested(statement).replace(/(?<=^|\s+)=\w+(\s+|$)/g, ""),
+    un_nest(statement)
+  );
+}
+
+export function getOneWordPredicate(x: string): string {
   // TODO
 }
 
-export function logicNotation(): string {
+export function logicNotation(x: string): string {
   // TODO
 }
 
@@ -166,7 +184,7 @@ export function getMapping(
 ): { [variable: string]: string } {
   let mapping = {};
   if (getPredicate(from) !== getPredicate(onto)) {
-    return {};
+    return null;
   } else {
     let fromNested = un_nest(from);
     let ontoNested = un_nest(onto);
@@ -177,15 +195,40 @@ export function getMapping(
       let x = getAssignment(fromNested[i]);
       let y = getAssignment(ontoNested[i]);
       if (variables.includes(x)) {
-        if (mapping[x] !== undefined && mapping[x] !== y) return {};
+        if (mapping[x] !== undefined && mapping[x] !== y) return null;
         else mapping[x] = y;
       } else {
-        if (x !== y) return {};
+        if (x !== y) return null;
         else continue;
       }
     }
-    return mapping
+    if (Object.keys(mapping).length > 0) return mapping;
+    else return null;
   }
+}
+
+export function deepMapAssignments(
+  mapping: { [variable: string]: string },
+  statement: string
+): string {
+  // TODO: consider using simple string replacement..
+  for (let variable in mapping) {
+    statement = statement.replace(
+      new RegExp(`(?<=^|\\s+)=${variable}(?=\\s+|$)`, "g"),
+      `=${mapping[variable]}`
+    );
+  }
+  return statement
+
+  //let assignment = getFirstAssignment(statement);
+  //let mappedAssignment = mapping[assignment] || assignment;
+  //return setAssignment(
+    //substitute_nested(
+      //statement,
+      //un_nest(statement).map((x) => deepMapAssignments(mapping, x))
+    //),
+    //mappedAssignment
+  //);
 }
 
 // TODO: Choose a better name

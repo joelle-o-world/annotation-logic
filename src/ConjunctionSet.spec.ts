@@ -31,4 +31,18 @@ describe("ConjunctionSet", () => {
     b.false("[=33] is round");
     expect(() => set.checkForContradictionsWith(b)).toThrow();
   });
+
+  test("Finding mappings", () => {
+    const set = new ConjunctionSet().true(
+      "[=a] is a circle",
+      "[=b] is a broccoli"
+    );
+
+    expect([...set.getMappings(["x"], "[=x] is a circle")]).toContainEqual({
+      x: "a",
+    });
+    expect([...set.getMappings(["x"], "[=x] is a broccoli")]).toContainEqual({
+      x: "b",
+    });
+  });
 });

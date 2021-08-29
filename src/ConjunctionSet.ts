@@ -1,4 +1,4 @@
-import { compare } from "./args";
+import { compare, deepMapAssignments, getMapping } from "./args";
 
 export default class ConjunctionSet implements LogicStructure {
   private trueStatements: string[];
@@ -48,6 +48,19 @@ export default class ConjunctionSet implements LogicStructure {
       yield { truth: false, statement };
   }
 
+  *iterateTrueStatements() {
+    for (let statement of this.trueStatements) yield statement;
+  }
+  *iterateFalseStatements() {
+    for (let statement of this.falseStatements) yield statement;
+  }
+  *iterateStatements(truth: boolean) {
+    for (let statement of truth
+      ? this.iterateTrueStatements()
+      : this.iterateFalseStatements())
+      yield statement;
+  }
+
   checkForContradictionsWith(set: ConjunctionSet): void {
     for (let { statement, truth } of this.iterateTruthAssigments()) {
       if (truth === undefined) continue;
@@ -55,5 +68,16 @@ export default class ConjunctionSet implements LogicStructure {
       if (evaluation === truth || evaluation === undefined) continue;
       else throw `Found contradiction: ${JSON.stringify(statement)}`;
     }
+  }
+
+  *getMappings(variables: string[], from: string, truth: true | false = true) {
+    for (let statement of this.iterateStatements(truth)) {
+      let mapping = getMapping(variables, from, statement);
+      if (mapping) yield mapping;
+      //let hypothesis = deepMapAssignments(mapping, from);
+    }
+
+    // TODO: Think through possible contradiction outcomes
+    // TODO: Eliminate duplicates
   }
 }
