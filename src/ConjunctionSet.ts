@@ -12,15 +12,17 @@ export default class ConjunctionSet implements LogicStructure {
   /**
    * Add a 'true' statement to the set.
    */
-  true(...statements: string[]) {
+  true(...statements: string[]): this {
     for (let statement of statements) this.trueStatements.push(statement);
+    return this;
   }
 
   /**
    * Add a 'false' statement to the set.
    */
-  false(...statements: string[]) {
+  false(...statements: string[]): this {
     for (let statement of statements) this.falseStatements.push(statement);
+    return this;
   }
 
   evaluate(x: string): true | false | undefined {
@@ -29,12 +31,14 @@ export default class ConjunctionSet implements LogicStructure {
     else return undefined;
   }
 
-  checkForInternalContradictions() {
+  checkForInternalContradictions(): this {
     for (let x of this.trueStatements)
       for (let y of this.falseStatements)
         if (compare(x, y))
           throw `Found contradiction between ${JSON.stringify(
             x
           )} (true) and ${JSON.stringify(y)} (false)`;
+
+    return this;
   }
 }
