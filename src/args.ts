@@ -147,8 +147,8 @@ export function getFirstAssignment(x: string): string | null {
 
 export function getAssignment(x: string): string | null {
   const assignments = [...getAssignments(x)];
-  if (assignments.length > 1) throw `Expected 1 or 0 assignments: ${x}`;
-  else return assignments[0] || null;
+  if (assignments.length !== 1) throw `Expected 1 assignment: ${x}`;
+  else return assignments[0];
 }
 
 export function getOneWordPredicate(): string {
@@ -157,4 +157,15 @@ export function getOneWordPredicate(): string {
 
 export function logicNotation(): string {
   // TODO
+}
+
+// TODO: Choose a better name
+export function compare(a: string, b: string): boolean {
+  if (getPredicate(a) !== getPredicate(b)) return false;
+  let aArgs = un_nest(a).map((nestedArg) => getAssignment(nestedArg));
+  let bArgs = un_nest(b).map((nestedArg) => getAssignment(nestedArg));
+  return (
+    aArgs.length === bArgs.length &&
+    aArgs.every((arg, i) => aArgs[i] === bArgs[i])
+  );
 }

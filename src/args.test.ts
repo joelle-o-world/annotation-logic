@@ -8,6 +8,7 @@ import {
   getOneWordPredicate,
   logicNotation,
   getAssignment,
+  compare,
 } from "./args";
 
 test("un_nest", () => {
@@ -82,11 +83,20 @@ test.todo("iterateBits");
 describe("assignments", () => {
   test("getAssignment", () => {
     expect(getAssignment("the cat =cat")).toBe("cat");
-    expect(getAssignment("the cat")).toBe(null);
-    expect(getAssignment("[=a] and [=b]")).toBe(null);
+    expect(() => getAssignment("the cat")).toThrow();
+    expect(() => getAssignment("[=a] and [=b]")).toThrow();
+    expect(getAssignment("[=a] and [=b] =c")).toBe("c");
     expect(() => getAssignment("=a =b")).toThrow();
   });
   test.todo("getAssignments");
   test.todo("getFirstAssignment");
   test.todo("setAssignment");
+});
+
+test("compare()", () => {
+  expect(compare("[=a] is on [=b]", "[=a] is on [=b]")).toBe(true);
+  expect(compare("[the lamp =a] is on [the desk=b]", "[=a] is on [=b]")).toBe(
+    true
+  );
+  expect(compare("[=a] is on [=b]", "[=c] is on [=b]")).toBe(false);
 });
