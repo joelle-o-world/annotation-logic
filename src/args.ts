@@ -150,3 +150,11 @@ export function getAssignment(x: string): string | null {
   if (assignments.length > 1) throw `Expected 1 or 0 assignments: ${x}`;
   else return assignments[0] || null;
 }
+
+export function getOneWordPredicate(): string {
+  // TODO
+}
+
+export function logicNotation(): string {
+  // TODO
+}
