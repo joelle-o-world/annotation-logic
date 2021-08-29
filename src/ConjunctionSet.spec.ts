@@ -32,17 +32,27 @@ describe("ConjunctionSet", () => {
     expect(() => set.checkForContradictionsWith(b)).toThrow();
   });
 
-  test("Finding mappings", () => {
-    const set = new ConjunctionSet().true(
-      "[=a] is a circle",
-      "[=b] is a broccoli"
-    );
+  describe("findMappings", () => {
+    test("finds simple mappings", () => {
+      const set = new ConjunctionSet().true(
+        "[=a] is a circle",
+        "[=b] is a broccoli"
+      );
 
-    expect([...set.getMappings(["x"], "[=x] is a circle")]).toContainEqual({
-      x: "a",
+      expect([...set.getMappings(["x"], "[=x] is a circle")]).toContainEqual({
+        x: "a",
+      });
+      expect([...set.getMappings(["x"], "[=x] is a broccoli")]).toContainEqual({
+        x: "b",
+      });
     });
-    expect([...set.getMappings(["x"], "[=x] is a broccoli")]).toContainEqual({
-      x: "b",
+
+    test("rejects unassigned arguments", () => {
+      expect(() => [
+        ...new ConjunctionSet()
+          .true("[=a] likes [=b]", "[=a] likes [=c]")
+          .getMappings(["x"], "[=x] likes []"),
+      ]).toThrow();
     });
   });
 });

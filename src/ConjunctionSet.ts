@@ -78,6 +78,5 @@ export default class ConjunctionSet implements LogicStructure {
     }
 
     // TODO: Think through possible contradiction outcomes
-    // TODO: Eliminate duplicates
   }
 }
