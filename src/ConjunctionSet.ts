@@ -4,9 +4,9 @@ export default class ConjunctionSet implements LogicStructure {
   private trueStatements: string[];
   private falseStatements: string[];
 
-  constructor(trueStatements: string[], falseStatements: string[]) {
-    for (let statement of trueStatements) this.true(statement);
-    for (let statement of falseStatements) this.false(statement);
+  constructor() {
+    this.trueStatements = [];
+    this.falseStatements = [];
   }
 
   /**
