@@ -7,6 +7,7 @@ import {
   standardForm,
   getOneWordPredicate,
   logicNotation,
+  getAssignment,
 } from "./args";
 
 test("un_nest", () => {
@@ -43,7 +44,7 @@ test("assertShallow", () => {
   ).toThrow();
 });
 
-describe("standardForm", () => {
+describe.skip("standardForm", () => {
   test.each([
     ["the cat", "the cat"],
     ["[the cat =cat] did [a terrible poo =poo]", "[=cat] did [=poo]"],
@@ -55,12 +56,12 @@ describe("standardForm", () => {
 test.todo("deepParse");
 
 test.todo("getPredicate");
-describe("one word predicates", () => {
+describe.skip("one word predicates", () => {
   describe("getOneWordPredicate", () => {
     test.each([
       ["the cat", "TheCat"],
       ["this is [my friend]", "ThisIs_"],
-    ])("getOneWordPredicate(%j%) = %j", (input, expectedOutput) => {
+    ])("getOneWordPredicate(%j) = %j", (input, expectedOutput) => {
       expect(getOneWordPredicate(input)).toBe(expectedOutput);
     });
   });
@@ -69,7 +70,7 @@ describe("one word predicates", () => {
   test.todo("assertOneWordPredicate");
   describe("logicNotation", () => {
     test.each([["[=cat] sat on [=mat]", "_SatOn_(cat, mat)"]])(
-      "logicNotation(%j%) = %j",
+      "logicNotation(%j) = %j",
       (input, expectedOutput) => {
         expect(logicNotation(input)).toBe(expectedOutput);
       }
@@ -78,5 +79,14 @@ describe("one word predicates", () => {
 });
 test.todo("iterateBits");
 
-test.todo("getAssignment");
-test.todo("setAssignment");
+describe("assignments", () => {
+  test("getAssignment", () => {
+    expect(getAssignment("the cat =cat")).toBe("cat");
+    expect(getAssignment("the cat")).toBe(null);
+    expect(getAssignment("[=a] and [=b]")).toBe(null);
+    expect(() => getAssignment("=a =b")).toThrow();
+  });
+  test.todo("getAssignments");
+  test.todo("getFirstAssignment");
+  test.todo("setAssignment");
+});
