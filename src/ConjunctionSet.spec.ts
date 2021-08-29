@@ -27,7 +27,6 @@ describe("ConjunctionSet", () => {
     const set = new ConjunctionSet();
     for (let i = 0; i < 100; ++i) set.true(`[=${i}] is round`);
     const b = new ConjunctionSet();
-
     expect(() => set.checkForContradictionsWith(b)).not.toThrow();
     b.false("[=33] is round");
     expect(() => set.checkForContradictionsWith(b)).toThrow();

@@ -9,6 +9,7 @@ import {
   logicNotation,
   getAssignment,
   compare,
+  getMapping,
 } from "./args";
 
 test("un_nest", () => {
@@ -99,4 +100,26 @@ test("compare()", () => {
     true
   );
   expect(compare("[=a] is on [=b]", "[=c] is on [=b]")).toBe(false);
+});
+
+test("getMapping", () => {
+  expect(
+    getMapping(["x", "y"], "[=x] is a string", "[=a] is a square")
+  ).toStrictEqual({});
+  expect(
+    getMapping(["x", "y"], "[=x] is a string", "[=a] is a string")
+  ).toStrictEqual({ x: "a" });
+  expect(
+    getMapping(["x", "y"], "[=b] is a string", "[=a] is a string")
+  ).toStrictEqual({});
+  expect(
+    getMapping(
+      ["x", "y"],
+      "[=x] is a component of [=y]",
+      "[=a] is a component of [=b]"
+    )
+  ).toStrictEqual({
+    x: 'a',
+    y: 'b'
+  });
 });

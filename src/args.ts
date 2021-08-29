@@ -159,6 +159,35 @@ export function logicNotation(): string {
   // TODO
 }
 
+export function getMapping(
+  variables: string[],
+  from: string,
+  onto: string
+): { [variable: string]: string } {
+  let mapping = {};
+  if (getPredicate(from) !== getPredicate(onto)) {
+    return {};
+  } else {
+    let fromNested = un_nest(from);
+    let ontoNested = un_nest(onto);
+    if (fromNested.length !== ontoNested.length)
+      // TODO: remove this
+      throw "This shouldn't happen";
+    for (let i = 0; i < fromNested.length; ++i) {
+      let x = getAssignment(fromNested[i]);
+      let y = getAssignment(ontoNested[i]);
+      if (variables.includes(x)) {
+        if (mapping[x] !== undefined && mapping[x] !== y) return {};
+        else mapping[x] = y;
+      } else {
+        if (x !== y) return {};
+        else continue;
+      }
+    }
+    return mapping
+  }
+}
+
 // TODO: Choose a better name
 export function compare(a: string, b: string): boolean {
   if (getPredicate(a) !== getPredicate(b)) return false;
