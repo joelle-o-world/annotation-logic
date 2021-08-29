@@ -41,4 +41,19 @@ export default class ConjunctionSet implements LogicStructure {
 
     return this;
   }
+
+  *iterateTruthAssigments() {
+    for (let statement of this.trueStatements) yield { truth: true, statement };
+    for (let statement of this.falseStatements)
+      yield { truth: false, statement };
+  }
+
+  checkForContradictionsWith(set: ConjunctionSet): void {
+    for (let { statement, truth } of this.iterateTruthAssigments()) {
+      if (truth === undefined) continue;
+      let evaluation = set.evaluate(statement);
+      if (evaluation === truth || evaluation === undefined) continue;
+      else throw `Found contradiction: ${JSON.stringify(statement)}`;
+    }
+  }
 }

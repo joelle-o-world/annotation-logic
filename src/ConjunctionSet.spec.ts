@@ -8,6 +8,12 @@ describe("ConjunctionSet", () => {
     expect(set.evaluate("[=c] is small")).toBe(undefined);
   });
 
+  test("Evaluating statements without arguments", () => {
+    const set = new ConjunctionSet().true("the earth is flat");
+    expect(set.evaluate("the earth is flat")).toBe(true);
+    expect(set.evaluate("there is a god")).toBe(undefined);
+  });
+
   test("Finding internal contradictions", () => {
     const set = new ConjunctionSet();
     for (let i = 0; i < 100; ++i) set.true(`[=${i}] is round`);
@@ -15,5 +21,15 @@ describe("ConjunctionSet", () => {
 
     set.false("[=33] is round");
     expect(() => set.checkForInternalContradictions()).toThrow();
+  });
+
+  test("finding external contradictions", () => {
+    const set = new ConjunctionSet();
+    for (let i = 0; i < 100; ++i) set.true(`[=${i}] is round`);
+    const b = new ConjunctionSet();
+
+    expect(() => set.checkForContradictionsWith(b)).not.toThrow();
+    b.false("[=33] is round");
+    expect(() => set.checkForContradictionsWith(b)).toThrow();
   });
 });
