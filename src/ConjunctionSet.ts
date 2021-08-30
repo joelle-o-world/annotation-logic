@@ -1,6 +1,19 @@
-import { compare, deepMapAssignments, getMapping } from "./args";
+import {
+  AssignsTruthValues,
+  Evaluates,
+  IteratesTruthAssignments,
+  FindsMappings,
+} from "./logic-typings";
+import { compare, getMapping } from "./args";
 
-export default class ConjunctionSet implements LogicStructure {
+export default class ConjunctionSet
+  implements
+    AssignsTruthValues,
+    Evaluates<string>,
+    IteratesTruthAssignments,
+    FindsMappings<string>,
+    FindsMappings<ConjunctionSet>
+{
   private trueStatements: string[];
   private falseStatements: string[];
 
@@ -31,7 +44,12 @@ export default class ConjunctionSet implements LogicStructure {
     else return undefined;
   }
 
-  checkForInternalContradictions(): this {
+  healthCheck(): this {
+    this.checkForInternalContradictions();
+    // TODO: Check for dulicates
+    return this;
+  }
+  private checkForInternalContradictions(): this {
     for (let x of this.trueStatements)
       for (let y of this.falseStatements)
         if (compare(x, y))
@@ -70,7 +88,11 @@ export default class ConjunctionSet implements LogicStructure {
     }
   }
 
-  *getMappings(variables: string[], from: string, truth: true | false = true) {
+  *getMappings(
+    variables: string[],
+    from: string | ConjunctionSet,
+    truth: true | false = true
+  ) {
     for (let statement of this.iterateStatements(truth)) {
       let mapping = getMapping(variables, from, statement);
       if (mapping) yield mapping;
