@@ -17,10 +17,10 @@ describe("ConjunctionSet", () => {
   test("Finding internal contradictions", () => {
     const set = new ConjunctionSet();
     for (let i = 0; i < 100; ++i) set.true(`[=${i}] is round`);
-    expect(() => set.checkForInternalContradictions()).not.toThrow();
+    expect(() => set.healthCheck()).not.toThrow();
 
     set.false("[=33] is round");
-    expect(() => set.checkForInternalContradictions()).toThrow();
+    expect(() => set.healthCheck()).toThrow();
   });
 
   test("finding external contradictions", () => {
@@ -39,20 +39,53 @@ describe("ConjunctionSet", () => {
         "[=b] is a broccoli"
       );
 
-      expect([...set.getMappings(["x"], "[=x] is a circle")]).toContainEqual({
+      expect([...set.findMappings(["x"], "[=x] is a circle")]).toContainEqual({
         x: "a",
       });
-      expect([...set.getMappings(["x"], "[=x] is a broccoli")]).toContainEqual({
-        x: "b",
-      });
+      expect([...set.findMappings(["x"], "[=x] is a broccoli")]).toContainEqual(
+        {
+          x: "b",
+        }
+      );
     });
 
     test("rejects unassigned arguments", () => {
       expect(() => [
         ...new ConjunctionSet()
           .true("[=a] likes [=b]", "[=a] likes [=c]")
-          .getMappings(["x"], "[=x] likes []"),
+          .findMappings(["x"], "[=x] likes []"),
       ]).toThrow();
+    });
+
+    describe("find mappings from another conjunction set", () => {
+      test("Ignore mappings that lead to contradictions between mapped set and base set", () => {
+        let set1 = new ConjunctionSet()
+          .true("[=a] is a string")
+          .true("[=a] is orange")
+          .true("[=b] is a string")
+          .false("[=b] is orange");
+
+        let set2 = new ConjunctionSet()
+          .true("[=x] is a string")
+          .true("[=x] is orange");
+
+        expect([...set1.findMappings(["x"], set2)]).toStrictEqual([{ x: "a" }]);
+      });
+
+      test("Rejects mappings that lead to internal contradictions in mapped set", () => {
+        let set1 = new ConjunctionSet()
+          .true("[=a] is a string")
+          .true("[=a] is orange")
+          .true("[=b] is a string")
+          .true("[=b] is orange")
+
+        let set2 = new ConjunctionSet()
+          .true("[=x] is a string")
+          .true("[=x] is orange")
+          .false("[=a] is a string");
+
+        expect([...set1.findMappings(["x"], set2)]).toStrictEqual([{x:'b'}]);
+      });
     });
   });
 });

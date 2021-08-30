@@ -3,8 +3,14 @@ import {
   Evaluates,
   IteratesTruthAssignments,
   FindsMappings,
+  VariableMapping,
 } from "./logic-typings";
 import { compare, getMapping } from "./args";
+import {
+  arrayIncludesMapping,
+  compareMappings,
+  mergeMappings,
+} from "./mappings";
 
 export default class ConjunctionSet
   implements
@@ -88,9 +94,13 @@ export default class ConjunctionSet
     }
   }
 
-  *getMappings(
+  mapAssignments(mapping: VariableMapping) {
+    // TODO
+  }
+
+  private *findMappingsFromSingleStatement(
     variables: string[],
-    from: string | ConjunctionSet,
+    from: string,
     truth: true | false = true
   ) {
     for (let statement of this.iterateStatements(truth)) {
@@ -100,5 +110,55 @@ export default class ConjunctionSet
     }
 
     // TODO: Think through possible contradiction outcomes
+  }
+
+  private *findMappingsFromConjunctionSet(
+    variables: string[],
+    from: ConjunctionSet,
+    truth: true | false = true
+  ): Generator<VariableMapping> {
+    const mappings = [];
+    let yieldCursor = 0;
+    const yieldMapping = (m: VariableMapping) => {
+      // Exit early if mapping exists
+      if (arrayIncludesMapping(mappings, m)) return;
+      mappings.push(m);
+
+      // TODO: ignore mapping if it leads to interal contradictions in mapping set
+      // TODO: ignore mapping if it leads to contradictions between mapping set and this set.
+
+      for (let n of mappings) {
+        let merged = mergeMappings(m, n);
+        if (
+          merged &&
+          !compareMappings(merged, m) &&
+          !compareMappings(merged, n)
+        )
+          yieldMapping(merged);
+      }
+    };
+
+    for (let statement of from.iterateStatements(truth)) {
+      for (let m of this.findMappingsFromSingleStatement(
+        variables,
+        statement,
+        truth
+      )) {
+        if (m) yieldMapping(m);
+        while (yieldCursor < mappings.length) yield mappings[yieldCursor++];
+      }
+    }
+    while (yieldCursor < mappings.length) yield mappings[yieldCursor++];
+  }
+
+  findMappings(
+    variables: string[],
+    from: string | ConjunctionSet,
+    truth: true | false = true
+  ) {
+    if (typeof from === "string")
+      return this.findMappingsFromSingleStatement(variables, from, truth);
+    else if (from instanceof ConjunctionSet)
+      return this.findMappingsFromConjunctionSet(variables, from, truth);
   }
 }

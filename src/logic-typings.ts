@@ -1,3 +1,6 @@
+export interface VariableMapping {
+  [variable: string]: string;
+}
 /**
  * An interface for assigning `true' or `false` to specific statements.
  */
@@ -24,7 +27,7 @@ export interface IteratesTruthAssignments {
 }
 
 export interface IteratesByPredicate {
-  iterateByPredicate(): Iterator<string>
+  iterateByPredicate(): Iterator<string>;
 }
 
 export interface Evaluates<T> {
