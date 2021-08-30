@@ -77,14 +77,14 @@ describe("ConjunctionSet", () => {
           .true("[=a] is a string")
           .true("[=a] is orange")
           .true("[=b] is a string")
-          .true("[=b] is orange")
+          .true("[=b] is orange");
 
         let set2 = new ConjunctionSet()
           .true("[=x] is a string")
           .true("[=x] is orange")
           .false("[=a] is a string");
 
-        expect([...set1.findMappings(["x"], set2)]).toStrictEqual([{x:'b'}]);
+        expect([...set1.findMappings(["x"], set2)]).toStrictEqual([{ x: "b" }]);
       });
     });
   });
