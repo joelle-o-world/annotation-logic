@@ -132,7 +132,7 @@ export default class ConjunctionSet
         if (
           merged &&
           !compareMappings(merged, m) &&
-          !compareMappings(merged, n)
+          !compareMappings(merged, n) // <-- This looks like some mappings may get overlooked
         )
           yieldMapping(merged);
       }
