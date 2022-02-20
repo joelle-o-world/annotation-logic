@@ -15,4 +15,15 @@ describe("TruthTable", () => {
       { _x: "b" },
     ]);
   });
+
+  test("mapArguments", () => {
+    let myTable = new TruthTable()
+      .true("P(a)", "Q(_x)")
+      .mapArguments({ _x: "b", a: "b" });
+
+    expect(myTable.evaluate("P(a)")).toBeUndefined();
+    expect(myTable.evaluate("Q(_x)")).toBeUndefined();
+    expect(myTable.evaluate("P(b)")).toBe(true);
+    expect(myTable.evaluate("Q(b)")).toBe(true);
+  });
 });

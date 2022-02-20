@@ -52,6 +52,7 @@ export default class TruthTable
     let index = this.data.findIndex((row) =>
       compareSentences(row.sentence, sentence)
     );
+
     if (index !== -1) this.data.splice(index, 1);
     if (truth !== undefined) this.data.push({ sentence, truth });
     return this;
@@ -148,5 +149,25 @@ export default class TruthTable
       predicate: result[1],
       arguments: result[2].split(",").map((arg) => arg.trim()),
     };
+  }
+
+  mapArguments(mapping: { [oldName: string]: string }): TruthTable {
+    const newTable = new TruthTable();
+
+    for (let assignment of this.iterateTruthAssignments()) {
+      let newStatement = {
+        predicate: assignment.statement.predicate,
+        arguments: assignment.statement.arguments.map(
+          (arg) => mapping[arg] || arg
+        ),
+      };
+      if (newTable.evaluate(newStatement) === !assignment.truth)
+        throw new Error(
+          `Contradiction during mapping: ${JSON.stringify(newStatement)}`
+        );
+      newTable.assign(newStatement, assignment.truth);
+    }
+
+    return newTable;
   }
 }
