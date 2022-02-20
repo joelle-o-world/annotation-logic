@@ -32,9 +32,7 @@ export default class TruthTable
     this.data = [];
   }
 
-  evaluate(statement: Sentence | string) {
-    if (typeof statement === "string")
-      return this.evaluate(TruthTable.parseL1StyleSentenceString(statement));
+  evaluate(statement: Sentence) {
     let match = this.data.find((row) =>
       compareSentences(row.sentence, statement)
     );
@@ -42,13 +40,7 @@ export default class TruthTable
     else return undefined;
   }
 
-  assign(sentence: Sentence | string, truth: true | false | undefined) {
-    if (typeof sentence === "string")
-      return this.assign(
-        TruthTable.parseL1StyleSentenceString(sentence),
-        truth
-      );
-
+  assign(sentence: Sentence, truth: true | false | undefined) {
     let index = this.data.findIndex((row) =>
       compareSentences(row.sentence, sentence)
     );
@@ -58,12 +50,12 @@ export default class TruthTable
     return this;
   }
 
-  true(...sentences: (Sentence | string)[]) {
+  true(...sentences: Sentence[]) {
     for (let sentence of sentences) this.assign(sentence, true);
     return this;
   }
 
-  false(...sentences: (Sentence | string)[]) {
+  false(...sentences: Sentence[]) {
     for (let sentence of sentences) this.assign(sentence, false);
     return this;
   }
@@ -111,17 +103,7 @@ export default class TruthTable
     return mapping;
   }
 
-  *findMappings(
-    patternInput: { statement: Sentence; truth: true | false } | string
-  ) {
-    const pattern =
-      typeof patternInput === "string"
-        ? {
-            statement: TruthTable.parseL1StyleSentenceString(patternInput),
-            truth: true,
-          }
-        : patternInput;
-
+  *findMappings(pattern: { statement: Sentence; truth: true | false }) {
     const yieldedMappings: VariableMapping[] = [];
     for (let { statement, truth } of this.iterateByPredicate(
       pattern.statement.predicate
@@ -138,17 +120,6 @@ export default class TruthTable
           yield mapping;
       }
     }
-  }
-
-  private static parseL1StyleSentenceString(str: string) {
-    let result = /(\w+)\((.*)\)/.exec(str);
-    if (!result)
-      throw new Error(`Cannot parse L1 style sentence: ${JSON.stringify(str)}`);
-
-    return {
-      predicate: result[1],
-      arguments: result[2].split(",").map((arg) => arg.trim()),
-    };
   }
 
   mapArguments(mapping: { [oldName: string]: string }): TruthTable {
