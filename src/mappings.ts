@@ -1,4 +1,4 @@
-import { VariableMapping } from "./logic-typings";
+import { VariableMapping } from "./logical-interfaces";
 
 export function mergeMappings(
   a: VariableMapping,

@@ -1,10 +1,10 @@
 import {
   AssignsTruthValues,
-  Evaluates,
+  EvaluatesSentences,
   IteratesTruthAssignments,
   FindsMappings,
   VariableMapping,
-} from "./logic-typings";
+} from "./logical-interfaces";
 import { compare, getMapping } from "./args";
 import {
   arrayIncludesMapping,
@@ -15,11 +15,11 @@ import {
 export default class ConjunctionSet
   implements
     AssignsTruthValues,
-    Evaluates<string>,
-    IteratesTruthAssignments,
-    FindsMappings<string>,
-    FindsMappings<ConjunctionSet>
+    EvaluatesSentences<string>,
+    IteratesTruthAssignments
 {
+  // TODO: implement FindsMappings<string>
+  // TODO: implement FindsMappings<ConjunctionSet>
   private trueStatements: string[];
   private falseStatements: string[];
 

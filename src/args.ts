@@ -1,3 +1,5 @@
+// TODO: One of the main problems with this module is that there is no better word than `arg` or `argument` or `argstring` for the basic logical unit it is discusing. Maybe `clause` or `statement` or something else could be more meaningful. `argument` is confusing because it is already a javascript term
+
 /**
  * Retrieves the nested arguments from an argstring.
  */
@@ -17,6 +19,10 @@ export function un_nest(arg: string): string[] {
   return result;
 }
 
+/**
+ * Replaces the nested arguments with the given string.
+ * NOTE: Removes angle brackets.
+ */
 export function substitute(a: string, subs: string[]) {
   let depth = 0,
     pin = 0,
@@ -76,6 +82,9 @@ export function wipe_nested(a: string) {
   return result;
 }
 
+/**
+ * Measures the depth of nested arguments.
+ */
 export function getDepth(a: string) {
   let depth = 0;
   let maxDepth = 0;
@@ -107,19 +116,28 @@ export function isShallow(a: string) {
   return hasMaxDepth(a, 1);
 }
 
+export function hasNestedArguments(x: string) {
+  return !hasMaxDepth(x, 0);
+}
+
 export function assertShallow(x: string): true {
   if (isShallow(x)) return true;
   else throw `Expected shallow argument, got ${x}`;
 }
 
+// TODO: Potentially rename to `normalise` or something
 export function standardForm(x: string): string {
-  // TODO
+  // TODO: Convert an argument into some as yet undecided stard form
 }
 
-export function deepParse(x: string): string {
-  // TODO
+export function deepParse(x: string) {
+  // TODO: Recursively parse the argument and all nested arguments.
+  // TODO: Decide upon a type/structure for the return value of this function.
 }
 
+/**
+ * Finds the predicate of an argstring.
+ */
 export function getPredicate(x: string): string {
   return wipe_nested(x);
 }
@@ -174,7 +192,11 @@ export function getOneWordPredicate(x: string): string {
 }
 
 export function logicNotation(x: string): string {
-  // TODO
+  if (hasNestedArguments(x))
+    return `${getOneWordPredicate(x)}(${un_nest(x)
+      .map((arg) => logicNotation(arg))
+      .join(", ")})`;
+  else return getOneWordPredicate(x);
 }
 
 export function getMapping(
@@ -218,16 +240,16 @@ export function deepMapAssignments(
       `=${mapping[variable]}`
     );
   }
-  return statement
+  return statement;
 
   //let assignment = getFirstAssignment(statement);
   //let mappedAssignment = mapping[assignment] || assignment;
   //return setAssignment(
-    //substitute_nested(
-      //statement,
-      //un_nest(statement).map((x) => deepMapAssignments(mapping, x))
-    //),
-    //mappedAssignment
+  //substitute_nested(
+  //statement,
+  //un_nest(statement).map((x) => deepMapAssignments(mapping, x))
+  //),
+  //mappedAssignment
   //);
 }
 
