@@ -87,7 +87,6 @@ export default class TruthTable
     patternSentence: Sentence,
     sentence: Sentence
   ): VariableMapping | null {
-    console.log("getting sentence mapping:", patternSentence, sentence);
     let mapping = {};
     for (let i in sentence.arguments) {
       if (
