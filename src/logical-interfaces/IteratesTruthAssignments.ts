@@ -5,7 +5,7 @@ export default interface IteratesTruthAssignments<Sentence = string> {
   /**
    * Iterate through all truth assignments in the structure
    */
-  iterateTruthAssigments(): Iterator<{
+  iterateTruthAssignments(): Iterator<{
     truth: true | false | undefined;
     statement: Sentence;
   }>;
@@ -13,15 +13,15 @@ export default interface IteratesTruthAssignments<Sentence = string> {
   /**
    * Iterate through all statements assigned `true`.
    */
-  iterateTrueStatements(): Iterator<string>;
+  iterateTrueStatements(): Iterator<Sentence>;
 
   /**
    * Iterate through all statements assigned `false`
    */
-  iterateFalseStatements(): Iterator<string>;
+  iterateFalseStatements(): Iterator<Sentence>;
 
   /**
    * Iterate all statements in the structure, without their assigned truth values.
    */
-  iterateStatements(truthValue: boolean): Iterator<string>;
+  iterateStatements(truthValue: boolean): Iterator<Sentence>;
 }

@@ -1,4 +1,8 @@
-import { EvaluatesSentences, AssignsTruthValues } from "./logical-interfaces";
+import {
+  EvaluatesSentences,
+  AssignsTruthValues,
+  IteratesTruthAssignments,
+} from "./logical-interfaces";
 
 interface Sentence {
   predicate: string;
@@ -13,7 +17,10 @@ function compareSentences(a: Sentence, b: Sentence) {
 }
 
 export default class TruthTable
-  implements EvaluatesSentences<Sentence>, AssignsTruthValues<Sentence>
+  implements
+    EvaluatesSentences<Sentence>,
+    AssignsTruthValues<Sentence>,
+    IteratesTruthAssignments<Sentence>
 {
   private data: { sentence: Sentence; truth: true | false }[];
 
@@ -43,8 +50,25 @@ export default class TruthTable
     return this;
   }
 
-  false(...sentence: Sentence[]) {
+  false(...sentences: Sentence[]) {
     for (let sentence of sentences) this.assign(sentence, false);
     return this;
+  }
+
+  *iterateTruthAssignments() {
+    for (let row of this.data)
+      yield { statement: row.sentence, truth: row.truth };
+  }
+
+  *iterateTrueStatements() {
+    for (let row of this.data) if (row.truth === true) yield row.sentence;
+  }
+
+  *iterateFalseStatements() {
+    for (let row of this.data) if (row.truth === false) yield row.sentence;
+  }
+
+  *iterateStatements() {
+    for (let row of this.data) yield row.sentence;
   }
 }
