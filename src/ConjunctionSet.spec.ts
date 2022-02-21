@@ -1,6 +1,6 @@
 import ConjunctionSet from "./ConjunctionSet";
 
-describe("ConjunctionSet", () => {
+describe.skip("ConjunctionSet", () => {
   test("Evaluating statements", () => {
     const set = new ConjunctionSet().true("[=a] is small", "[=b] is small");
     expect(set.evaluate("[he =a] is small")).toBe(true);

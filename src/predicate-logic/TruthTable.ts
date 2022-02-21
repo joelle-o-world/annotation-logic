@@ -1,4 +1,4 @@
-import { isVariable } from "./variables";
+import { getArgMapping, isVariable } from "./variables";
 import {
   EvaluatesSentences,
   AssignsTruthValues,
@@ -32,12 +32,29 @@ export default class TruthTable
     this.data = [];
   }
 
-  evaluate(statement: Sentence) {
-    let match = this.data.find((row) =>
-      compareSentences(row.sentence, statement)
-    );
-    if (match) return match.truth;
-    else return undefined;
+  evaluate(statement: Sentence | TruthTable) {
+    if (statement instanceof TruthTable) return this.evaluateTable(statement);
+    else {
+      let match = this.data.find((row) =>
+        compareSentences(row.sentence, statement)
+      );
+      if (match) return match.truth;
+      else return undefined;
+    }
+  }
+
+  private evaluateTable(table: TruthTable) {
+    // TODO: Add warning/error for subclasses of TruthTable
+    if (table.constructor !== TruthTable)
+      throw new Error(
+        `Cannot evaluate TruthTable subclasses, got ${table.constructor.name}`
+      );
+
+    for (let assignment of table.iterateTruthAssignments())
+      if (this.evaluate(assignment.statement) !== assignment.truth)
+        return false;
+    // Otherwise
+    return true;
   }
 
   assign(sentence: Sentence, truth: true | false | undefined) {
@@ -83,23 +100,13 @@ export default class TruthTable
         yield { statement: row.sentence, truth: row.truth };
   }
 
-  private static getSentenceMapping(
+  // TODO: Remove this
+  /** @deprecated */
+  private static getArgMapping(
     patternSentence: Sentence,
     sentence: Sentence
   ): VariableMapping | null {
-    let mapping = {};
-    for (let i in sentence.arguments) {
-      if (
-        isVariable(patternSentence.arguments[i]) &&
-        (!mapping[patternSentence.arguments[i]] ||
-          mapping[patternSentence.arguments[i]] === sentence.arguments[i])
-      )
-        mapping[patternSentence.arguments[i]] = sentence.arguments[i];
-      else if (patternSentence.arguments[i] === sentence.arguments[i]) continue;
-      else return null;
-    }
-    // Otherwise
-    return mapping;
+    return getArgMapping(patternSentence.arguments, sentence.arguments);
   }
 
   *findMappings(pattern: { statement: Sentence; truth: true | false }) {
@@ -108,10 +115,7 @@ export default class TruthTable
       pattern.statement.predicate
     )) {
       if (truth === pattern.truth) {
-        let mapping = TruthTable.getSentenceMapping(
-          pattern.statement,
-          statement
-        );
+        let mapping = TruthTable.getArgMapping(pattern.statement, statement);
         if (
           mapping &&
           !yieldedMappings.some((m) => compareVariableMappings(m, mapping))
@@ -121,7 +125,9 @@ export default class TruthTable
     }
   }
 
-  mapArguments(mapping: { [oldName: string]: string }): TruthTable {
+  mapArguments(
+    mapping: { [oldName: string]: string } | VariableMapping
+  ): TruthTable {
     const newTable = new TruthTable();
 
     for (let assignment of this.iterateTruthAssignments()) {
