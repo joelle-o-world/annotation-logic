@@ -62,6 +62,6 @@ export default class AnnotationTruthTable {
   }
 
   mapArguments(mapping: { [oldName: string]: string }) {
-    return new AnnotationTruthTable(this.table.mapArguments(mapping));
+    return new AnnotationTruthTable(this.table.mapArgs(mapping));
   }
 }

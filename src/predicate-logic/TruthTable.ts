@@ -4,146 +4,151 @@ import {
   AssignsTruthValues,
   IteratesTruthAssignments,
 } from "../logical-interfaces";
-import VariableMapping, {
-  compareVariableMappings,
-} from "../logical-interfaces/VariableMapping";
+import skipDuplicates from "../utils/skipDuplicates";
+import {
+  Contradiction,
+  MethodNotSupported as NotSupported,
+  NotImplemented,
+} from "../utils/Errors";
+import deepCompare from "../deepCompare";
 
-interface Sentence {
-  predicate: string;
-  arguments: string[];
-}
 function compareSentences(a: Sentence, b: Sentence) {
   return (
     a.predicate === b.predicate &&
-    a.arguments.length === b.arguments.length &&
-    a.arguments.every((arg, i) => b.arguments[i] === arg)
+    a.args.length === b.args.length &&
+    a.args.every((arg, i) => b.args[i] === arg)
   );
 }
 
-export default class TruthTable
-  implements
-    EvaluatesSentences<Sentence>,
-    AssignsTruthValues<Sentence>,
-    IteratesTruthAssignments<Sentence>
-{
+export default class TruthTable implements LogicImplementation {
   private data: { sentence: Sentence; truth: true | false }[];
 
   constructor() {
     this.data = [];
   }
 
-  evaluate(statement: Sentence | TruthTable) {
-    if (statement instanceof TruthTable) return this.evaluateTable(statement);
-    else {
-      let match = this.data.find((row) =>
-        compareSentences(row.sentence, statement)
-      );
-      if (match) return match.truth;
-      else return undefined;
-    }
+  mapVariables(mapping: VariableMap): this {
+    throw new NotImplemented();
   }
 
-  private evaluateTable(table: TruthTable) {
-    // TODO: Add warning/error for subclasses of TruthTable
-    if (table.constructor !== TruthTable)
-      throw new Error(
-        `Cannot evaluate TruthTable subclasses, got ${table.constructor.name}`
-      );
+  evaluateSentence(sentence: Sentence) {
+    let match = this.data.find((row) =>
+      compareSentences(row.sentence, sentence)
+    );
+    if (match) return match.truth;
+    else return undefined;
+  }
 
-    for (let assignment of table.iterateTruthAssignments())
-      if (this.evaluate(assignment.statement) !== assignment.truth)
-        return false;
+  evaluateFacts(facts: Fact[]) {
+    // TODO: Add warning/error for subclasses of TruthTable
+
+    for (let fact of facts)
+      if (this.evaluateSentence(fact) !== fact.truth) return false;
     // Otherwise
     return true;
   }
 
-  assign(sentence: Sentence, truth: true | false | undefined) {
-    let index = this.data.findIndex((row) =>
+  /**
+   * Finds index of the given sentence in the data store. Implementation specific
+   */
+  private findSentenceIndex(sentence: Sentence) {
+    return this.data.findIndex((row) =>
       compareSentences(row.sentence, sentence)
     );
+  }
+  assign(sentence: Sentence, truth: Truth) {
+    let index = this.findSentenceIndex(sentence);
+    if (index !== -1 && this.data[index].truth !== truth)
+      throw new Contradiction();
+    else this.data.push({ sentence, truth });
+  }
+  reassign(sentence: Sentence, truth: true | false | undefined) {
+    let index = this.findSentenceIndex(sentence);
 
     if (index !== -1) this.data.splice(index, 1);
     if (truth !== undefined) this.data.push({ sentence, truth });
     return this;
   }
 
-  true(...sentences: Sentence[]) {
-    for (let sentence of sentences) this.assign(sentence, true);
-    return this;
+  *iterateFacts() {
+    for (let row of this.data) yield { ...row.sentence, truth: row.truth };
   }
 
-  false(...sentences: Sentence[]) {
-    for (let sentence of sentences) this.assign(sentence, false);
-    return this;
-  }
-
-  *iterateTruthAssignments() {
-    for (let row of this.data)
-      yield { statement: row.sentence, truth: row.truth };
-  }
-
-  *iterateTrueStatements() {
+  *iterateTrueSentences() {
     for (let row of this.data) if (row.truth === true) yield row.sentence;
   }
 
-  *iterateFalseStatements() {
+  *iterateFalseSentences() {
     for (let row of this.data) if (row.truth === false) yield row.sentence;
   }
 
-  *iterateStatements() {
-    for (let row of this.data) yield row.sentence;
+  *iterateFactsByPredicate(predicate: string) {
+    for (let fact of this.iterateFacts())
+      if (fact.predicate === predicate) yield fact;
   }
 
-  *iterateByPredicate(predicate: string) {
-    for (let row of this.data)
-      if (row.sentence.predicate === predicate)
-        yield { statement: row.sentence, truth: row.truth };
+  iterateVariables() {
+    return skipDuplicates(
+      (function* () {
+        for (let { args } of this.iterateFacts())
+          for (let arg of args) if (isVariable(arg)) yield arg;
+      })()
+    );
+  }
+  iteratePredicates() {
+    return skipDuplicates(
+      (function* () {
+        for (let predicate of this.iterateFacts) yield predicate;
+      })()
+    );
   }
 
-  // TODO: Remove this
-  /** @deprecated */
-  private static getArgMapping(
-    patternSentence: Sentence,
-    sentence: Sentence
-  ): VariableMapping | null {
-    return getArgMapping(patternSentence.arguments, sentence.arguments);
+  iterateEntities() {
+    return skipDuplicates(
+      (function* () {
+        for (let { args } of this.iterateFacts())
+          for (let arg of args) yield arg;
+      })()
+    );
   }
 
-  *findMappings(pattern: { statement: Sentence; truth: true | false }) {
-    const yieldedMappings: VariableMapping[] = [];
-    for (let { statement, truth } of this.iterateByPredicate(
-      pattern.statement.predicate
-    )) {
-      if (truth === pattern.truth) {
-        let mapping = TruthTable.getArgMapping(pattern.statement, statement);
-        if (
-          mapping &&
-          !yieldedMappings.some((m) => compareVariableMappings(m, mapping))
-        )
-          yield mapping;
-      }
-    }
+  mappingsFromFact(pattern: Fact) {
+    return skipDuplicates(
+      (function* () {
+        for (let { args, truth } of this.iterateFactsByPredicate(
+          pattern.predicate
+        )) {
+          let mapping = getArgMapping(pattern.args, args);
+          if (mapping) yield mapping;
+        }
+      })(),
+      deepCompare
+    );
   }
 
-  mapArguments(
-    mapping: { [oldName: string]: string } | VariableMapping
-  ): TruthTable {
+  mappingsFromFacts(pattern: Fact[]): Iterable<VariableMap> {
+    throw new NotImplemented();
+  }
+
+  mapEntities(mapping: EntityMap): TruthTable {
     const newTable = new TruthTable();
 
-    for (let assignment of this.iterateTruthAssignments()) {
-      let newStatement = {
-        predicate: assignment.statement.predicate,
-        arguments: assignment.statement.arguments.map(
-          (arg) => mapping[arg] || arg
-        ),
+    for (let assignment of this.iterateFacts()) {
+      let newSentence = {
+        predicate: assignment.predicate,
+        args: assignment.args.map((arg) => mapping[arg] || arg),
       };
-      if (newTable.evaluate(newStatement) === !assignment.truth)
+      if (newTable.evaluateSentence(newSentence) === !assignment.truth)
         throw new Error(
-          `Contradiction during mapping: ${JSON.stringify(newStatement)}`
+          `Contradiction during mapping: ${JSON.stringify(newSentence)}`
         );
-      newTable.assign(newStatement, assignment.truth);
+      newTable.assign(newSentence, assignment.truth);
     }
 
     return newTable;
+  }
+
+  addRule() {
+    throw new NotSupported();
   }
 }

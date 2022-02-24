@@ -1,6 +1,6 @@
 import L1StringTruthTable from "./L1StringTruthTable";
 
-describe("L1StringTruthTable", () => {
+describe.skip("L1StringTruthTable", () => {
   test("We can assign some truth values then look them up", () => {
     expect(new L1StringTruthTable().true("P(a,b)").evaluate("P(a,b)")).toBe(
       true

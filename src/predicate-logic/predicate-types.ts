@@ -4,7 +4,7 @@ type Variable = `_${string}`;
 type Truth = true | false | undefined;
 type Sentence = { predicate: Predicate; args: Entity[] };
 type Fact = { predicate: Predicate; args: Entity[]; truth: Truth };
-type ArgMap = {
+type EntityMap = {
   [from: Entity]: Entity;
 };
 type VariableMap = {
@@ -31,7 +31,7 @@ interface LogicInterface {
 
   evaluate(something: string): Truth;
 
-  query(pattern: string): Generator<{ mapping: VariableMap; add(): void }>;
+  query(pattern: string): Iterable<{ mapping: VariableMap; add(): void }>;
 }
 
 interface LogicImplementation {
@@ -41,11 +41,25 @@ interface LogicImplementation {
    */
   reassign(sentence: Sentence, truth: Truth): void;
 
-  evaluate(sentence: Sentence): Truth;
-  listEntities(): Entity[];
-  listVariables(): Variable[];
-  listPredicates(): Predicate[];
-  listFactsByPredicate(predicate: Predicate): Fact[];
+  evaluateSentence(sentence: Sentence): Truth;
+  evaluateFacts(facts: Fact[]): Truth;
+
+  // Iterating
+  iterateEntities(): Iterable<Entity>;
+  iterateVariables(): Iterable<Variable>;
+  iteratePredicates(): Iterable<Predicate>;
+  iterateFacts(): Iterable<Fact>;
+  iterateFactsByPredicate(predicate: Predicate): Iterable<Fact>;
+  iterateFalseSentences(): Iterable<Sentence>;
+  iterateTrueSentences(): Iterable<Sentence>;
+
+  // Mapping arguments
+  mapEntities(mapping: EntityMap): typeof this;
+  mapVariables(mapping: VariableMap): typeof this;
+
+  // Finding Mappings
+  fitFact(pattern: Fact): Iterable<VariableMap>;
+  fitFacts(pattern: Fact[]): Iterable<VariableMap>;
 
   // Rules
   addRule(rule: Rule): void;

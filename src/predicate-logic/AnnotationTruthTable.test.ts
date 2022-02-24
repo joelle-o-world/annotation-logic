@@ -1,7 +1,7 @@
 import AnnotationTruthTable from "./AnnotationTruthTable";
 
-describe("AnnotationTruthTable", () => {
-  test("We can assign some truth values then look them up", () => {
+describe.skip("AnnotationTruthTable", () => {
+  test.todo("We can assign some truth values then look them up", () => {
     expect(new AnnotationTruthTable().true("P(a,b)").evaluate("P(a,b)")).toBe(
       true
     );
@@ -13,7 +13,7 @@ describe("AnnotationTruthTable", () => {
     ).toBe(false);
   });
 
-  test("Finding mappings for a single sentence", () => {
+  test.todo("Finding mappings for a single sentence", () => {
     const myTable = new AnnotationTruthTable().true("p[a]", "p[b]", "q[c]");
     expect([...myTable.findMappings("p[_x]")]).toStrictEqual([
       { _x: "a" },
@@ -21,7 +21,7 @@ describe("AnnotationTruthTable", () => {
     ]);
   });
 
-  test("mapArguments", () => {
+  test.todo("mapArguments", () => {
     let myTable = new AnnotationTruthTable()
       .true("p [a]", "q [_x]")
       .mapArguments({ _x: "b", a: "b" });

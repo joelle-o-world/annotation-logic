@@ -5,8 +5,6 @@ export function isVariable(arg: string): arg is Variable {
   return /^_/.test(arg);
 }
 
-export type Variable = `_${string}`;
-
 export function getArgMapping(from: string[], onto: string[]): VariableMapping {
   if (from.length !== onto.length)
     throw new Error("different numbers of arguments");

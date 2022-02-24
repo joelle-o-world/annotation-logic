@@ -65,6 +65,6 @@ export default class L1StringTruthTable {
   }
 
   mapArguments(mapping: { [oldName: string]: string }) {
-    return new L1StringTruthTable(this.table.mapArguments(mapping));
+    return new L1StringTruthTable(this.table.mapArgs(mapping));
   }
 }
