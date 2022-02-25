@@ -1,13 +1,13 @@
-type Predicate = string;
-type Entity = string;
-type Variable = `_${string}`;
-type Truth = true | false | undefined;
-type Sentence = { predicate: Predicate; args: Entity[] };
-type Fact = { predicate: Predicate; args: Entity[]; truth: Truth };
-type EntityMap = {
+export type Predicate = string;
+export type Entity = string;
+export type Variable = `_${string}`;
+export type Truth = true | false | undefined;
+export type Sentence = { predicate: Predicate; args: Entity[] };
+export type Fact = { predicate: Predicate; args: Entity[]; truth: Truth };
+export type EntityMap = {
   [from: Entity]: Entity;
 };
-type VariableMap = {
+export type VariableMap = {
   [from: Variable]: Variable;
 };
 /**
@@ -16,30 +16,42 @@ type VariableMap = {
  *
  * These are passive and checked when evaluating the consequence
  */
-type Rule = {
+export type Rule = {
   conditions: Fact[];
   consequence: Fact;
 };
 
-interface LogicInterface {
-  add(
-    /**
-     * Could be a rule, a fact or factset
-     */
-    something: string
-  ): void;
+export type LabelledLogicObject =
+  | { kind: "Predicate"; object: Predicate }
+  | { kind: "Entity"; object: Entity }
+  | { kind: "Variable"; object: Variable }
+  | { kind: "Truth"; object: Truth }
+  | { kind: "Sentence"; object: Sentence }
+  | { kind: "Fact"; object: Fact }
+  | { kind: "Facts"; object: Fact[] }
+  | { kind: "Rule"; object: Rule };
+
+export interface LogicInterface {
+  add(...stuff: string[]): this;
+  mod(...stuff: string[]): this;
 
   evaluate(something: string): Truth;
 
-  query(pattern: string): Iterable<{ mapping: VariableMap; add(): void }>;
+  query(pattern: string): Iterable<VariableMap>;
+
+  mapEntities(mapping: EntityMap): typeof this;
 }
 
-interface LogicImplementation {
+export interface LogicImplementation {
   assign(sentence: Sentence, truth: Truth): void;
   /**
    * Same as assign but does not throw exception for contradictions
    */
   reassign(sentence: Sentence, truth: Truth): void;
+  addFact(fact: Fact): void;
+  addFacts(facts: Fact[]): void;
+  overwriteFact(fact: Fact): void;
+  overwriteFacts(facts: Fact[]): void;
 
   evaluateSentence(sentence: Sentence): Truth;
   evaluateFacts(facts: Fact[]): Truth;
@@ -58,8 +70,8 @@ interface LogicImplementation {
   mapVariables(mapping: VariableMap): typeof this;
 
   // Finding Mappings
-  fitFact(pattern: Fact): Iterable<VariableMap>;
-  fitFacts(pattern: Fact[]): Iterable<VariableMap>;
+  mappingsFromFact(pattern: Fact): Iterable<VariableMap>;
+  mappingsFromFacts(pattern: Fact[]): Iterable<VariableMap>;
 
   // Rules
   addRule(rule: Rule): void;

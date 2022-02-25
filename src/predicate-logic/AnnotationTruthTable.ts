@@ -1,67 +1,42 @@
-import { getPredicate, un_nest } from "../args";
+import { getPredicate, hasNestedArguments, un_nest } from "../args";
+import { NotImplemented } from "../utils/Errors";
+import ParsingTruthTable from "./ParsingTruthTable";
+import { LabelledLogicObject, LogicInterface } from "./predicate-types";
 import TruthTable from "./TruthTable";
 
-export default class AnnotationTruthTable {
-  private table: TruthTable;
-  private static parse(str: string) {
+const NOT = "NOT []";
+
+function parse(str: string): LabelledLogicObject {
+  if (str === "true") return { kind: "Truth", object: true };
+  if (str === "false") return { kind: "Truth", object: false };
+
+  if (!hasNestedArguments(str))
+    return { kind: "Predicate", object: getPredicate(str) };
+
+  const predicate = getPredicate(str);
+  if (predicate === NOT) {
+    const subArg = un_nest(str)[0];
     return {
-      predicate: getPredicate(str),
-      arguments: un_nest(str),
+      kind: "Fact",
+      object: {
+        truth: false,
+        predicate: getPredicate(subArg),
+        args: un_nest(subArg),
+      },
     };
   }
 
+  return {
+    kind: "Sentence",
+    object: { predicate: getPredicate(str), args: un_nest(str) },
+  };
+}
+
+export default class AnnotationTruthTable
+  extends ParsingTruthTable
+  implements LogicInterface
+{
   constructor(table = new TruthTable()) {
-    this.table = table;
-  }
-
-  assign(sentence: string, truth: true | false | undefined) {
-    this.table.assign(AnnotationTruthTable.parse(sentence), truth);
-    return this;
-  }
-
-  true(...sentences: string[]) {
-    this.table.true(...sentences.map(AnnotationTruthTable.parse));
-    return this;
-  }
-
-  false(...sentences: string[]) {
-    this.table.false(...sentences.map(AnnotationTruthTable.parse));
-    return this;
-  }
-
-  evaluate(sentence: string) {
-    return this.table.evaluate(AnnotationTruthTable.parse(sentence));
-  }
-
-  iterateTruthAssignments() {
-    return this.table.iterateTruthAssignments();
-  }
-
-  iterateTrueStatements() {
-    return this.table.iterateTrueStatements();
-  }
-
-  iterateStatements() {
-    return this.table.iterateStatements();
-  }
-  iterateByPredicate(predicate: string) {
-    return this.table.iterateByPredicate(predicate);
-  }
-
-  findMappings(pattern: string) {
-    if (/^!/.test(pattern))
-      return this.table.findMappings({
-        statement: AnnotationTruthTable.parse(pattern.slice(1)),
-        truth: false,
-      });
-    else
-      return this.table.findMappings({
-        statement: AnnotationTruthTable.parse(pattern),
-        truth: true,
-      });
-  }
-
-  mapArguments(mapping: { [oldName: string]: string }) {
-    return new AnnotationTruthTable(this.table.mapArgs(mapping));
+    super(table, parse);
   }
 }

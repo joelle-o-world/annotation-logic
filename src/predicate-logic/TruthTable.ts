@@ -7,10 +7,19 @@ import {
 import skipDuplicates from "../utils/skipDuplicates";
 import {
   Contradiction,
-  MethodNotSupported as NotSupported,
+  NotSupported as NotSupported,
   NotImplemented,
 } from "../utils/Errors";
 import deepCompare from "../deepCompare";
+import {
+  EntityMap,
+  Fact,
+  LogicImplementation,
+  Sentence,
+  Truth,
+  Variable,
+  VariableMap,
+} from "./predicate-types";
 
 function compareSentences(a: Sentence, b: Sentence) {
   return (
@@ -25,10 +34,6 @@ export default class TruthTable implements LogicImplementation {
 
   constructor() {
     this.data = [];
-  }
-
-  mapVariables(mapping: VariableMap): this {
-    throw new NotImplemented();
   }
 
   evaluateSentence(sentence: Sentence) {
@@ -57,17 +62,34 @@ export default class TruthTable implements LogicImplementation {
     );
   }
   assign(sentence: Sentence, truth: Truth) {
+    if (truth === undefined)
+      throw new NotSupported("Cant assign truth value undefined");
     let index = this.findSentenceIndex(sentence);
     if (index !== -1 && this.data[index].truth !== truth)
       throw new Contradiction();
     else this.data.push({ sentence, truth });
   }
   reassign(sentence: Sentence, truth: true | false | undefined) {
+    if (truth === undefined)
+      throw new NotImplemented("Cant reassign truth value undefined");
     let index = this.findSentenceIndex(sentence);
 
-    if (index !== -1) this.data.splice(index, 1);
-    if (truth !== undefined) this.data.push({ sentence, truth });
+    if (index !== -1) this.data[index] = { sentence, truth };
+    else this.data.push({ sentence, truth });
     return this;
+  }
+
+  addFact(fact: Fact) {
+    this.assign({ predicate: fact.predicate, args: fact.args }, fact.truth);
+  }
+  addFacts(facts: Fact[]) {
+    for (let fact of facts) this.addFact(fact);
+  }
+  overwriteFact(fact: Fact): void {
+    this.reassign({ predicate: fact.predicate, args: fact.args }, fact.truth);
+  }
+  overwriteFacts(facts: Fact[]): void {
+    for (let fact of facts) this.overwriteFact(fact);
   }
 
   *iterateFacts() {
@@ -88,36 +110,38 @@ export default class TruthTable implements LogicImplementation {
   }
 
   iterateVariables() {
+    const facts = this.iterateFacts();
     return skipDuplicates(
       (function* () {
-        for (let { args } of this.iterateFacts())
+        for (let { args } of facts)
           for (let arg of args) if (isVariable(arg)) yield arg;
       })()
     );
   }
   iteratePredicates() {
+    const facts = this.iterateFacts();
     return skipDuplicates(
       (function* () {
-        for (let predicate of this.iterateFacts) yield predicate;
+        for (let { predicate } of facts) yield predicate;
       })()
     );
   }
 
   iterateEntities() {
+    const facts = this.iterateFacts();
     return skipDuplicates(
       (function* () {
-        for (let { args } of this.iterateFacts())
-          for (let arg of args) yield arg;
+        for (let { args } of facts) for (let arg of args) yield arg;
       })()
     );
   }
 
   mappingsFromFact(pattern: Fact) {
+    const facts = this.iterateFactsByPredicate(pattern.predicate);
     return skipDuplicates(
       (function* () {
-        for (let { args, truth } of this.iterateFactsByPredicate(
-          pattern.predicate
-        )) {
+        for (let { args, truth } of facts) {
+          if (truth !== pattern.truth) continue;
           let mapping = getArgMapping(pattern.args, args);
           if (mapping) yield mapping;
         }
@@ -126,7 +150,7 @@ export default class TruthTable implements LogicImplementation {
     );
   }
 
-  mappingsFromFacts(pattern: Fact[]): Iterable<VariableMap> {
+  mappingsFromFacts(_pattern: Fact[]): Iterable<VariableMap> {
     throw new NotImplemented();
   }
 
@@ -148,7 +172,15 @@ export default class TruthTable implements LogicImplementation {
     return newTable;
   }
 
+  mapVariables(mapping: VariableMap): TruthTable {
+    return this.mapEntities(mapping);
+  }
+
   addRule() {
     throw new NotSupported();
   }
+}
+
+function predicate(predicate: any) {
+  throw new Error("Function not implemented.");
 }
