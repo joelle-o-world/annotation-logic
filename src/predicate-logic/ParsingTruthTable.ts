@@ -125,8 +125,9 @@ export default class ParsingTruthTable implements LogicInterface {
     }
   }
 
-  mapEntities(_mapping: EntityMap): typeof this {
-    throw new NotImplemented();
+  mapEntities(mapping: EntityMap): ParsingTruthTable {
+    let newStructure = this.structure.mapEntities(mapping);
+    return new ParsingTruthTable(newStructure, this.parse, this.compose);
   }
 }
 

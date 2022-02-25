@@ -11,8 +11,22 @@ describe("AnnotationTruthTable", () => {
   });
   test("We can assign a negative truth value then look it up", () => {
     let table = new AnnotationTruthTable().add("NOT [P[a][b]]");
-    console.log("TABLE", table.structure.data);
     expect(table.evaluate("P[a][b]")).toBe(false);
+  });
+
+  test("evaluating multiple facts", () => {
+    expect(
+      new AnnotationTruthTable()
+        .add("P[a]", "P[b]", "P[c]")
+        .evaluate("P[a]; P[b]")
+    ).toBe(true);
+  });
+
+  test("assigning multiple facts", () => {
+    let table = new AnnotationTruthTable().add("NOT [P[a]]; Q[a][b] ;\nL[cat]");
+    expect(table.evaluate("Q[a][b]")).toBe(true);
+    expect(table.evaluate("P[a]")).toBe(false);
+    expect(table.evaluate("L[cat]")).toBe(true);
   });
 
   test("We can use the mod function to overwrite truth assignments", () => {

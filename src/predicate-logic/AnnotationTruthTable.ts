@@ -1,4 +1,4 @@
-import { getPredicate, isPredicate, un_nest } from "../args";
+import { getPredicate, isPredicate, listClauses, un_nest } from "../args";
 import ParsingTruthTable from "./ParsingTruthTable";
 import { Fact, LabelledLogicObject, LogicInterface } from "./predicate-types";
 import TruthTable from "./TruthTable";
@@ -9,6 +9,13 @@ const PASSIVE_RULE = "[] if []";
 function parse(str: string): LabelledLogicObject {
   if (str === "true") return { kind: "Truth", object: true };
   if (str === "false") return { kind: "Truth", object: false };
+
+  const clauses = listClauses(str);
+  if (clauses.length > 1)
+    return {
+      kind: "Facts",
+      object: clauses.map((clause) => parseFact(clause)),
+    };
 
   if (isPredicate(str)) return { kind: "Predicate", object: getPredicate(str) };
 
@@ -27,9 +34,8 @@ function parse(str: string): LabelledLogicObject {
 
   if (predicate === PASSIVE_RULE) {
     const [consequenceStr, conditionsStr] = un_nest(str);
-    const conditions = conditionsStr
+    const conditions = listClauses(conditionsStr)
       // TODO: This should be a standardised part of annotation parsing library
-      .split(/\s*;\s/)
       .map((conditionStr) => parseFact(conditionStr));
 
     return {
@@ -69,6 +75,10 @@ export default class AnnotationTruthTable
   implements LogicInterface
 {
   constructor(table = new TruthTable()) {
-    super(table, parse);
+    super(table, (str) => {
+      const parsed = parse(str);
+      //console.log(str, "->", parsed.kind + ":", parsed.object);
+      return parsed;
+    });
   }
 }

@@ -1,5 +1,7 @@
 // TODO: One of the main problems with this module is that there is no better word than `arg` or `argument` or `argstring` for the basic logical unit it is discusing. Maybe `clause` or `statement` or something else could be more meaningful. `argument` is confusing because it is already a javascript term
 
+import { NotImplemented } from "./utils/Errors";
+
 /**
  * Retrieves the nested arguments from an argstring.
  */
@@ -45,6 +47,33 @@ export function substitute(a: string, subs: string[]) {
   result += a.slice(pin);
 
   return result;
+}
+
+export function* iterateClauses(str: string): Generator<string> {
+  let currentDepth = 0;
+  let pin = 0;
+  for (let i = 0; i < str.length; ++i) {
+    let c = str[i];
+    switch (c) {
+      case "[":
+        ++currentDepth;
+        break;
+      case "]":
+        --currentDepth;
+        break;
+      case ";":
+        if (currentDepth === 0) {
+          yield str.slice(pin, i).trim();
+          pin = i + 1;
+        }
+    }
+  }
+
+  if (str.length > pin) yield str.slice(pin).trim();
+}
+
+export function listClauses(str: string): string[] {
+  return [...iterateClauses(str)];
 }
 
 /**
@@ -132,6 +161,7 @@ export function assertShallow(x: string): true {
 // TODO: Potentially rename to `normalise` or something
 export function standardForm(x: string): string {
   // TODO: Convert an argument into some as yet undecided stard form
+  throw new NotImplemented();
 }
 
 export function deepParse(x: string) {
