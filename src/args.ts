@@ -120,6 +120,10 @@ export function hasNestedArguments(x: string) {
   return !hasMaxDepth(x, 0);
 }
 
+export function isPredicate(str: string) {
+  return getDepth(str) === 1 && un_nest(str).every((arg) => arg === "");
+}
+
 export function assertShallow(x: string): true {
   if (isShallow(x)) return true;
   else throw `Expected shallow argument, got ${x}`;
