@@ -1,9 +1,4 @@
-import { getArgMapping, isVariable } from "./variables";
-import {
-  EvaluatesSentences,
-  AssignsTruthValues,
-  IteratesTruthAssignments,
-} from "../logical-interfaces";
+import { isVariable } from "./variables";
 import skipDuplicates from "../utils/skipDuplicates";
 import {
   Contradiction,
@@ -17,9 +12,9 @@ import {
   LogicImplementation,
   Sentence,
   Truth,
-  Variable,
   VariableMap,
 } from "./predicate-types";
+import { getArgMapping, mapSentenceEntities } from "./mapping";
 
 function compareSentences(a: Sentence, b: Sentence) {
   return (
@@ -45,12 +40,7 @@ export default class TruthTable implements LogicImplementation {
   }
 
   evaluateFacts(facts: Fact[]) {
-    // TODO: Add warning/error for subclasses of TruthTable
-
-    for (let fact of facts)
-      if (this.evaluateSentence(fact) !== fact.truth) return false;
-    // Otherwise
-    return true;
+    return facts.every((fact) => this.evaluateSentence(fact) === fact.truth);
   }
 
   /**
@@ -157,16 +147,9 @@ export default class TruthTable implements LogicImplementation {
   mapEntities(mapping: EntityMap): TruthTable {
     const newTable = new TruthTable();
 
-    for (let assignment of this.iterateFacts()) {
-      let newSentence = {
-        predicate: assignment.predicate,
-        args: assignment.args.map((arg) => mapping[arg] || arg),
-      };
-      if (newTable.evaluateSentence(newSentence) === !assignment.truth)
-        throw new Error(
-          `Contradiction during mapping: ${JSON.stringify(newSentence)}`
-        );
-      newTable.assign(newSentence, assignment.truth);
+    for (let fact of this.iterateFacts()) {
+      let newSentence = mapSentenceEntities(fact, mapping);
+      newTable.assign(newSentence, fact.truth);
     }
 
     return newTable;
@@ -177,10 +160,7 @@ export default class TruthTable implements LogicImplementation {
   }
 
   addRule() {
+    // TruthTable will not support rules
     throw new NotSupported();
   }
-}
-
-function predicate(predicate: any) {
-  throw new Error("Function not implemented.");
 }

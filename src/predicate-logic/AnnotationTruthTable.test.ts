@@ -46,7 +46,7 @@ describe("AnnotationTruthTable", () => {
     ]);
   });
 
-  test("mapArguments", () => {
+  test("mapEntities", () => {
     let myTable = new AnnotationTruthTable()
       .add("p [a]", "q [_x]")
       .mapEntities({ _x: "b", a: "b" });
@@ -55,5 +55,47 @@ describe("AnnotationTruthTable", () => {
     expect(myTable.evaluate("q [_x]")).toBeUndefined();
     expect(myTable.evaluate("p [b]")).toBe(true);
     expect(myTable.evaluate("q [b]")).toBe(true);
+  });
+
+  describe("Rules", () => {
+    test("Evaluating the consuquence of a simple rule", () => {
+      expect(
+        new AnnotationTruthTable()
+          .add("if [p[_x]] then [q[_x]]", "p[a]")
+          .evaluate("q[a]")
+      ).toBe(true);
+    });
+
+    test("A rule which evaluates a rule", () => {
+      expect(
+        new AnnotationTruthTable()
+          .add("if [p[_x]] then [q[_x]]", "if [q[_y]] then [r[_y]]", "p[a]")
+          .evaluate("r[a]")
+      ).toBe(true);
+
+      expect(
+        new AnnotationTruthTable()
+          .add(
+            "if [[_x] is an elm] then [[_x] is a tree]",
+            "if [[_y] is a tree] then [[_y] is a plant]",
+            "[John] is an elm"
+          )
+          .evaluate("[John] is a plant")
+      ).toBe(true);
+    });
+
+    test("evaluating negated rule consequences", () => {
+      expect(
+        new AnnotationTruthTable()
+          .add(
+            "if [[_x] is called Xena] then [[_x] is a delight]",
+            "[the dog] is called Xena"
+          )
+          .evaluate("NOT [[the dog] is a delight]")
+      ).toBe(false);
+    });
+
+    // TODO: Rules with multiple conditions
+    // TODO: Rules with argless conditions and consequences
   });
 });
