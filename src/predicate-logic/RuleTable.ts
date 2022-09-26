@@ -1,3 +1,4 @@
+import { mergeMappings } from "../mappings";
 import { Contradiction, NotImplemented } from "../utils/Errors";
 import skipDuplicates from "../utils/skipDuplicates";
 import AnnotationTruthTable from "./AnnotationTruthTable";
@@ -112,6 +113,7 @@ export default class RuleTable implements LogicImplementation {
     throw new NotImplemented();
   }
   mappingsFromFact(pattern: Fact): Iterable<VariableMap> {
+    const _this = this;
     const baseMappings = this.base.mappingsFromFact(pattern);
     const relevantRules = this.rules.filter(
       (rule) =>
@@ -126,7 +128,7 @@ export default class RuleTable implements LogicImplementation {
         for (let mapping of baseMappings) yield mapping;
         for (let rule of relevantRules) {
           // TODO: Maybe remove the irrelevent variables
-          for (let mapping of this.findMappingsFromFacts(rule.conditions))
+          for (let mapping of _this.mappingsFromFacts(rule.conditions))
             yield mapping;
         }
         // TODO: Find the mappings from rule consequences
@@ -134,7 +136,17 @@ export default class RuleTable implements LogicImplementation {
     );
   }
   mappingsFromFacts(pattern: Fact[]): Iterable<VariableMap> {
-    throw new NotImplemented();
+    let accumulatedMappings = [{}];
+    for (let fact of pattern) {
+      let nextMappings = [];
+      for (let a of this.mappingsFromFact(fact))
+        for (let b of accumulatedMappings) {
+          let merged = mergeMappings(a, b);
+          if (merged) nextMappings.push(merged);
+        }
+      accumulatedMappings = nextMappings;
+    }
+    return accumulatedMappings;
   }
   addRule(rule: Rule): void {
     // TODO: Check for resultant contradictions?

@@ -46,6 +46,28 @@ describe("AnnotationTruthTable", () => {
     ]);
   });
 
+  test("Finding mappings for multiple sentences", () => {
+    expect([
+      ...new AnnotationTruthTable().add("p[a]; q[b]").query("p[_x]; q[_y]"),
+    ]).toStrictEqual([{ _x: "a", _y: "b" }]);
+    expect([
+      ...new AnnotationTruthTable()
+        .add("p[a]; q[b]; q[c]")
+        .query("p[_x]; q[_y]"),
+    ]).toStrictEqual([
+      { _x: "a", _y: "b" },
+      { _x: "a", _y: "c" },
+    ]);
+  });
+
+  test("Finding mappings based on rule consequences", () => {
+    expect([
+      ...new AnnotationTruthTable()
+        .add("if [p[_x]] then [q[_x]]", "q[a]; r[b]")
+        .query("q[_y]; r[_z]"),
+    ]).toStrictEqual([{ _y: "a", _z: "b" }]);
+  });
+
   test("mapEntities", () => {
     let myTable = new AnnotationTruthTable()
       .add("p [a]", "q [_x]")

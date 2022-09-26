@@ -15,6 +15,7 @@ import {
   VariableMap,
 } from "./predicate-types";
 import { getArgMapping, mapSentenceEntities } from "./mapping";
+import { mergeMappings } from "../mappings";
 
 function compareSentences(a: Sentence, b: Sentence) {
   return (
@@ -140,8 +141,18 @@ export default class TruthTable implements LogicImplementation {
     );
   }
 
-  mappingsFromFacts(_pattern: Fact[]): Iterable<VariableMap> {
-    throw new NotImplemented();
+  mappingsFromFacts(pattern: Fact[]): Iterable<VariableMap> {
+    let accumulatedMappings = [{}];
+    for (let fact of pattern) {
+      let nextMappings = [];
+      for (let a of this.mappingsFromFact(fact))
+        for (let b of accumulatedMappings) {
+          let merged = mergeMappings(a, b);
+          if (merged) nextMappings.push(merged);
+        }
+      accumulatedMappings = nextMappings;
+    }
+    return accumulatedMappings;
   }
 
   mapEntities(mapping: EntityMap): TruthTable {
